@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pbackend-ingress
+  namespace: production
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: pbackend.richard-dev.my.id
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: backend-p
+            port:
+              number: 80
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-p
+  namespace: production
+spec:
+  selector:
+    app: backend-p
+  ports:
+  - port: 80
+    targetPort: 4000
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-p
+  namespace: production
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-p
+    spec:
+      containers:
+        - name: backend-p
+          image: "180602451697.dkr.ecr.ap-southeast-1.amazonaws.com/backend-bp"
+          ports:
+            - containerPort: 4000
+          resources:
+            limits:
+              cpu: 600m
+              memory: 768Mi
+            requests:
+              cpu: 200m
+              memory: 384Mi
+  selector:
+    matchLabels:
+      app: backend-p
